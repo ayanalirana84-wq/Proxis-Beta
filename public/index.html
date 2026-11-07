@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure AI Chatbot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .chat-card { background: #1e293b; border-radius: 12px; width: 100%; max-width: 550px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    h2 { font-size: 1.25rem; margin-bottom: 16px; color: #38bdf8; }
+    .box { background: #0f172a; border-radius: 8px; padding: 16px; min-height: 120px; max-height: 300px; overflow-y: auto; margin-bottom: 16px; font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; border: 1px solid #334155; }
+    .input-group { display: flex; gap: 8px; }
+    input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; outline: none; }
+    input:focus { border-color: #38bdf8; }
+    button { background: #0284c7; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    button:hover { background: #0369a1; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <div class="chat-card">
+    <h2>Secure AI Assistant</h2>
+    <div id="output" class="box">Ask something below...</div>
+    <div class="input-group">
+      <input type="text" id="userInput" placeholder="Type your prompt..." onkeydown="if(event.key==='Enter') sendPrompt()" />
+      <button id="sendBtn" onclick="sendPrompt()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendPrompt() {
+      const inputEl = document.getElementById('userInput');
+      const outputEl = document.getElementById('output');
+      const btnEl = document.getElementById('sendBtn');
+      const text = inputEl.value.trim();
+
+      if (!text) return;
+
+      inputEl.value = '';
+      outputEl.textContent = 'Thinking...';
+      btnEl.disabled = true;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          outputEl.textContent = data.reply;
+        } else {
+          outputEl.textContent = 'Error: ' + (data.error || 'Something went wrong');
+        }
+      } catch (err) {
+        outputEl.textContent = 'Connection error. Check your network or Vercel deployment.';
+      } finally {
+        btnEl.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
